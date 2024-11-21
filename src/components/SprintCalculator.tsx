@@ -1,23 +1,22 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, Users, Calendar } from "lucide-react";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { addDays, isWeekend, format } from "date-fns";
+import { Clock, Users } from "lucide-react";
+import { format, isWeekend } from "date-fns";
+import VacationSettings from "./vacation/VacationSettings";
 
 interface VacationDay {
   date: Date;
   engineerId: number;
-  hours?: number;  // New optional field for vacation hours
+  hours?: number;
 }
 
 const SprintCalculator = () => {
   const [engineers, setEngineers] = useState<number>(1);
   const [vacationDays, setVacationDays] = useState<VacationDay[]>([]);
   const [selectedEngineerId, setSelectedEngineerId] = useState<number>(1);
-  const [vacationHours, setVacationHours] = useState<number>(8); // Default to full day
+  const [vacationHours, setVacationHours] = useState<number>(8);
   const { toast } = useToast();
 
   const WORK_HOURS_PER_DAY = 8;
@@ -71,7 +70,7 @@ const SprintCalculator = () => {
 
   const handleVacationHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 8;
-    setVacationHours(Math.min(Math.max(1, value), 8)); // Limit between 1 and 8 hours
+    setVacationHours(Math.min(Math.max(1, value), 8));
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -109,110 +108,68 @@ const SprintCalculator = () => {
     }
   };
 
-  const getEngineerOptions = () => {
-    return Array.from({ length: engineers }, (_, i) => i + 1);
-  };
-
   return (
-    <div className="w-full max-w-md mx-auto space-y-6 animate-fadeIn">
-      <Card className="p-6 space-y-4">
-        <h2 className="text-2xl font-bold text-center mb-6">Sprint Calculator</h2>
-        
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Users className="w-5 h-5 text-primary" />
-            <label htmlFor="engineers" className="text-sm font-medium">
-              Number of Engineers
-            </label>
-          </div>
-          <Input
-            id="engineers"
-            type="number"
-            min="1"
-            value={engineers}
-            onChange={handleEngineersChange}
-            className="w-full"
-          />
-        </div>
+    <div className="w-full max-w-5xl mx-auto p-6 animate-fadeIn">
+      <Card className="p-8 bg-white/50 backdrop-blur-sm border-2 shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-start gap-8">
+          <div className="flex-1 space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Sprint Calculator</h2>
+              <p className="text-gray-600 mb-8">
+                Calculate sprint duration based on team size and vacation days
+              </p>
+            </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Users className="w-5 h-5 text-primary" />
-            <label htmlFor="engineerId" className="text-sm font-medium">
-              Select Engineer for Vacation
-            </label>
-          </div>
-          <select
-            id="engineerId"
-            value={selectedEngineerId}
-            onChange={(e) => setSelectedEngineerId(Number(e.target.value))}
-            className="w-full border rounded-md p-2"
-          >
-            {getEngineerOptions().map((id) => (
-              <option key={id} value={id}>
-                Engineer {id}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  <label htmlFor="engineers" className="text-sm font-medium">
+                    Number of Engineers
+                  </label>
+                </div>
+                <Input
+                  id="engineers"
+                  type="number"
+                  min="1"
+                  value={engineers}
+                  onChange={handleEngineersChange}
+                  className="w-full"
+                />
+              </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Clock className="w-5 h-5 text-primary" />
-            <label htmlFor="vacationHours" className="text-sm font-medium">
-              Vacation Hours (1-8)
-            </label>
-          </div>
-          <Input
-            id="vacationHours"
-            type="number"
-            min="1"
-            max="8"
-            value={vacationHours}
-            onChange={handleVacationHoursChange}
-            className="w-full"
-          />
-        </div>
+              <VacationSettings
+                engineers={engineers}
+                selectedEngineerId={selectedEngineerId}
+                vacationHours={vacationHours}
+                vacationDays={vacationDays}
+                onEngineerSelect={setSelectedEngineerId}
+                onVacationHoursChange={handleVacationHoursChange}
+                onDateSelect={handleDateSelect}
+              />
+            </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium">Select Vacation Days</span>
-          </div>
-          <CalendarComponent
-            mode="single"
-            selected={undefined}
-            onSelect={handleDateSelect}
-            className="rounded-md border"
-            disabled={(date) => isWeekend(date)}
-            modifiers={{
-              vacation: vacationDays.filter(v => v.engineerId === selectedEngineerId).map(v => v.date)
-            }}
-            modifiersStyles={{
-              vacation: { backgroundColor: '#0EA5E9', color: 'white' }
-            }}
-          />
-        </div>
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-primary" />
+                <span className="text-sm">Working Hours: 9:00 - 17:00</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-primary" />
+                <span className="text-sm">Working Days: Monday - Friday</span>
+              </div>
+            </div>
 
-        <div className="space-y-4 pt-4">
-          <div className="flex items-center space-x-2">
-            <Clock className="w-5 h-5 text-primary" />
-            <span className="text-sm">Working Hours: 9:00 - 17:00</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            <span className="text-sm">Working Days: Monday - Friday</span>
-          </div>
-        </div>
-
-        <div className="pt-6 border-t">
-          <div className="text-center space-y-2">
-            <p className="text-lg font-semibold">
-              Total Sprint Time: {formatDuration(calculateTotalDays())}
-            </p>
-            <p className="text-sm text-gray-500">
-              Based on {WEEKS_OF_WORK * engineers} total weeks of work
-            </p>
+            <div className="pt-6 border-t">
+              <div className="text-center space-y-2">
+                <p className="text-2xl font-semibold text-primary">
+                  Total Sprint Time: {formatDuration(calculateTotalDays())}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Based on {WEEKS_OF_WORK * engineers} total weeks of work
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </Card>
