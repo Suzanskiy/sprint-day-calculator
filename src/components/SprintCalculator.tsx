@@ -10,17 +10,19 @@ import { addDays, isWeekend, format } from "date-fns";
 interface VacationDay {
   date: Date;
   engineerId: number;
+  hours?: number;  // New optional field for vacation hours
 }
 
 const SprintCalculator = () => {
   const [engineers, setEngineers] = useState<number>(1);
   const [vacationDays, setVacationDays] = useState<VacationDay[]>([]);
   const [selectedEngineerId, setSelectedEngineerId] = useState<number>(1);
+  const [vacationHours, setVacationHours] = useState<number>(8); // Default to full day
   const { toast } = useToast();
 
-  const WORK_HOURS_PER_DAY = 8; // 9:00-17:00
-  const DAYS_PER_WEEK = 5; // Monday to Friday
-  const WEEKS_OF_WORK = 3; // Per engineer
+  const WORK_HOURS_PER_DAY = 8;
+  const DAYS_PER_WEEK = 5;
+  const WEEKS_OF_WORK = 3;
   const TOTAL_HOURS = WORK_HOURS_PER_DAY * DAYS_PER_WEEK * WEEKS_OF_WORK;
 
   const formatDuration = (totalDays: number) => {
@@ -51,19 +53,25 @@ const SprintCalculator = () => {
     // Calculate total work days without vacation
     const totalWorkDays = Math.ceil((TOTAL_HOURS * engineers) / WORK_HOURS_PER_DAY);
 
-    // Subtract vacation days
-    const validVacationDays = vacationDays.filter(vDay => {
-      const date = new Date(vDay.date);
-      return !isWeekend(date);
-    });
+    // Subtract vacation days/hours
+    const totalVacationDays = vacationDays.reduce((acc, vDay) => {
+      if (isWeekend(vDay.date)) return acc;
+      const hoursToSubtract = vDay.hours || WORK_HOURS_PER_DAY; // If hours not specified, subtract full day
+      return acc + (hoursToSubtract / WORK_HOURS_PER_DAY);
+    }, 0);
 
-    return totalWorkDays - validVacationDays.length;
+    return totalWorkDays - totalVacationDays;
   };
 
   const handleEngineersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 0;
     setEngineers(value);
     console.log("Engineers updated:", value);
+  };
+
+  const handleVacationHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 8;
+    setVacationHours(Math.min(Math.max(1, value), 8)); // Limit between 1 and 8 hours
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -89,10 +97,14 @@ const SprintCalculator = () => {
         description: `Removed vacation for Engineer ${selectedEngineerId} on ${format(date, 'PP')}`,
       });
     } else {
-      setVacationDays([...vacationDays, { date, engineerId: selectedEngineerId }]);
+      setVacationDays([...vacationDays, { 
+        date, 
+        engineerId: selectedEngineerId,
+        hours: vacationHours 
+      }]);
       toast({
         title: "Vacation added",
-        description: `Added vacation for Engineer ${selectedEngineerId} on ${format(date, 'PP')}`,
+        description: `Added ${vacationHours}h vacation for Engineer ${selectedEngineerId} on ${format(date, 'PP')}`,
       });
     }
   };
@@ -142,6 +154,24 @@ const SprintCalculator = () => {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Clock className="w-5 h-5 text-primary" />
+            <label htmlFor="vacationHours" className="text-sm font-medium">
+              Vacation Hours (1-8)
+            </label>
+          </div>
+          <Input
+            id="vacationHours"
+            type="number"
+            min="1"
+            max="8"
+            value={vacationHours}
+            onChange={handleVacationHoursChange}
+            className="w-full"
+          />
         </div>
 
         <div className="space-y-4">
