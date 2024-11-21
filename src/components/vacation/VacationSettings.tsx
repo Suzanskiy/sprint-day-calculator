@@ -86,7 +86,6 @@ const VacationSettings = ({
 
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-primary" />
               <span className="text-sm font-medium">Select Vacation Days</span>
             </div>
             <Calendar
