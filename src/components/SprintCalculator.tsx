@@ -23,6 +23,21 @@ const SprintCalculator = () => {
   const WEEKS_OF_WORK = 3; // Per engineer
   const TOTAL_HOURS = WORK_HOURS_PER_DAY * DAYS_PER_WEEK * WEEKS_OF_WORK;
 
+  const formatDuration = (totalDays: number) => {
+    const totalHours = totalDays * WORK_HOURS_PER_DAY;
+    
+    const weeks = Math.floor(totalDays / DAYS_PER_WEEK);
+    const remainingDays = Math.floor(totalDays % DAYS_PER_WEEK);
+    const remainingHours = Math.round((totalHours % WORK_HOURS_PER_DAY));
+
+    const parts = [];
+    if (weeks > 0) parts.push(`${weeks}w`);
+    if (remainingDays > 0) parts.push(`${remainingDays}d`);
+    if (remainingHours > 0) parts.push(`${remainingHours}h`);
+
+    return parts.join(', ') || '0h';
+  };
+
   const calculateTotalDays = () => {
     if (engineers <= 0) {
       toast({
@@ -163,7 +178,7 @@ const SprintCalculator = () => {
         <div className="pt-6 border-t">
           <div className="text-center space-y-2">
             <p className="text-lg font-semibold">
-              Total Sprint Days: {calculateTotalDays()}
+              Total Sprint Time: {formatDuration(calculateTotalDays())}
             </p>
             <p className="text-sm text-gray-500">
               Based on {WEEKS_OF_WORK * engineers} total weeks of work
