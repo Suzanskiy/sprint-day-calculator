@@ -63,7 +63,7 @@ const SprintCalculator = () => {
   };
 
   const handleEngineersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
+    const value = parseInt(e.target.value) || 1;
     setEngineers(value);
     console.log("Engineers updated:", value);
   };
