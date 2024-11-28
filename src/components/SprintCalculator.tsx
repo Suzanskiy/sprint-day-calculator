@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, Users, Calendar } from "lucide-react";
-import { format, isWeekend, differenceInBusinessDays, isBefore } from "date-fns";
+import { Users, Calendar } from "lucide-react";
+import { format, differenceInBusinessDays, isBefore } from "date-fns";
 import VacationSettings from "./vacation/VacationSettings";
 import VacationList from "./vacation/VacationList";
 import { Button } from "./ui/button";
@@ -11,12 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar as CalendarComponent } from "./ui/calendar";
 import { calculateWorkingDays } from "@/utils/dateCalculations";
 import SprintDuration from "./sprint/SprintDuration";
-
-interface VacationDay {
-  date: Date;
-  engineerId: number;
-  hours?: number;
-}
+import { VacationDay } from "@/types/vacation";
+import { calculateTotalWorkDays, WEEKS_OF_WORK } from "@/utils/sprintCalculations";
 
 const SprintCalculator = () => {
   const [engineers, setEngineers] = useState<number>(1);
@@ -26,24 +22,15 @@ const SprintCalculator = () => {
   const [sprintStartDate, setSprintStartDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
 
-  const WORK_HOURS_PER_DAY = 8;
-  const DAYS_PER_WEEK = 5;
-  const WEEKS_OF_WORK = 3;
-  const TOTAL_HOURS = WORK_HOURS_PER_DAY * DAYS_PER_WEEK * WEEKS_OF_WORK;
-
   const formatDuration = (totalDays: number) => {
-    const totalHours = totalDays * WORK_HOURS_PER_DAY;
+    const weeks = Math.floor(totalDays / 5);
+    const remainingDays = totalDays % 5;
     
-    const weeks = Math.floor(totalDays / DAYS_PER_WEEK);
-    const remainingDays = Math.floor(totalDays % DAYS_PER_WEEK);
-    const remainingHours = Math.round((totalHours % WORK_HOURS_PER_DAY));
-
     const parts = [];
     if (weeks > 0) parts.push(`${weeks}w`);
     if (remainingDays > 0) parts.push(`${remainingDays}d`);
-    if (remainingHours > 0) parts.push(`${remainingHours}h`);
-
-    return parts.join(', ') || '0h';
+    
+    return parts.join(', ') || '0d';
   };
 
   const calculateTotalDays = () => {
@@ -56,21 +43,8 @@ const SprintCalculator = () => {
       return 0;
     }
 
-    // Calculate total work days without vacation
-    const totalWorkHours = TOTAL_HOURS * engineers;
-    const rawWorkDays = Math.ceil(totalWorkHours / WORK_HOURS_PER_DAY);
-    
-    // Calculate actual calendar days needed (accounting for weekends)
-    const actualWorkDays = calculateWorkingDays(new Date(), rawWorkDays);
-
-    // Subtract vacation days/hours (only counting non-weekend days)
-    const totalVacationDays = vacationDays.reduce((acc, vDay) => {
-      if (isWeekend(vDay.date)) return acc;
-      const hoursToSubtract = vDay.hours || WORK_HOURS_PER_DAY;
-      return acc + (hoursToSubtract / WORK_HOURS_PER_DAY);
-    }, 0);
-
-    return actualWorkDays - totalVacationDays;
+    const totalWorkDays = calculateTotalWorkDays(engineers, vacationDays);
+    return calculateWorkingDays(new Date(), totalWorkDays);
   };
 
   const calculateRemainingTime = () => {
