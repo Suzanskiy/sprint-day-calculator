@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Users, Calendar } from "lucide-react";
-import { format, differenceInBusinessDays, isBefore } from "date-fns";
+import { format, differenceInBusinessDays, isBefore, isWeekend } from "date-fns";
 import VacationSettings from "./vacation/VacationSettings";
 import VacationList from "./vacation/VacationList";
 import { Button } from "./ui/button";
