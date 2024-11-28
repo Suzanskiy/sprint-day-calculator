@@ -34,6 +34,7 @@ const SprintCalculator = () => {
   };
 
   const calculateTotalDays = () => {
+    if (!sprintStartDate) return 0;
     if (engineers <= 0) {
       toast({
         title: "Invalid input",
@@ -43,8 +44,15 @@ const SprintCalculator = () => {
       return 0;
     }
 
+    const today = new Date();
+    if (isBefore(sprintStartDate, today)) {
+      const businessDaysPassed = differenceInBusinessDays(today, sprintStartDate);
+      const totalWorkDays = calculateTotalWorkDays(engineers, vacationDays);
+      return Math.max(0, totalWorkDays - businessDaysPassed);
+    }
+
     const totalWorkDays = calculateTotalWorkDays(engineers, vacationDays);
-    return calculateWorkingDays(new Date(), totalWorkDays);
+    return calculateWorkingDays(sprintStartDate, totalWorkDays);
   };
 
   const calculateRemainingTime = () => {
@@ -56,10 +64,11 @@ const SprintCalculator = () => {
     }
 
     const totalDays = calculateTotalDays();
-    const businessDaysPassed = differenceInBusinessDays(today, sprintStartDate);
-    const remainingDays = Math.max(0, totalDays - businessDaysPassed);
+    if (totalDays <= 0) {
+      return "Sprint is completed";
+    }
 
-    return formatDuration(remainingDays);
+    return formatDuration(totalDays);
   };
 
   const handleEngineersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
