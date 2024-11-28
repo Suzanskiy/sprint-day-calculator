@@ -4,10 +4,11 @@ import { isWeekend } from "date-fns";
 export const WORK_HOURS_PER_DAY = 8;
 export const DAYS_PER_WEEK = 5;
 export const WEEKS_OF_WORK = 3;
+export const TOTAL_WORKING_DAYS = WEEKS_OF_WORK * DAYS_PER_WEEK;
 
 export const calculateTotalWorkDays = (engineers: number, vacationDays: VacationDay[]) => {
   // One engineer works for 3 weeks (15 working days)
-  const totalWorkHours = WORK_HOURS_PER_DAY * DAYS_PER_WEEK * WEEKS_OF_WORK;
+  const totalWorkHours = WORK_HOURS_PER_DAY * TOTAL_WORKING_DAYS;
   const rawWorkDays = Math.ceil(totalWorkHours / WORK_HOURS_PER_DAY);
 
   // Subtract vacation days (only counting non-weekend days)

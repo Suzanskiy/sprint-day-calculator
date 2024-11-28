@@ -1,12 +1,14 @@
-import { isWeekend, addDays, isBefore } from "date-fns";
+import { isWeekend, addDays, isBefore, nextMonday } from "date-fns";
 
 export const calculateWorkingDays = (startDate: Date, numberOfDays: number): number => {
+  // Ensure start date is a Monday
+  const adjustedStartDate = nextMonday(startDate);
   let workingDays = 0;
-  let currentDate = new Date(startDate);
+  let currentDate = new Date(adjustedStartDate);
   let daysToAdd = 0;
 
   while (workingDays < numberOfDays) {
-    currentDate = addDays(startDate, daysToAdd);
+    currentDate = addDays(adjustedStartDate, daysToAdd);
     if (!isWeekend(currentDate)) {
       workingDays++;
     }
@@ -17,7 +19,8 @@ export const calculateWorkingDays = (startDate: Date, numberOfDays: number): num
 };
 
 export const getEndDate = (startDate: Date, totalWorkingDays: number): Date => {
-  let currentDate = new Date(startDate);
+  const adjustedStartDate = nextMonday(startDate);
+  let currentDate = new Date(adjustedStartDate);
   let workingDays = 0;
   
   while (workingDays < totalWorkingDays) {

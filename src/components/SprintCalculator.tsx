@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Users, Calendar } from "lucide-react";
-import { format, differenceInBusinessDays, isBefore, isWeekend } from "date-fns";
+import { format, differenceInBusinessDays, isBefore, isWeekend, nextMonday } from "date-fns";
 import VacationSettings from "./vacation/VacationSettings";
 import VacationList from "./vacation/VacationList";
 import { Button } from "./ui/button";
@@ -12,14 +12,14 @@ import { Calendar as CalendarComponent } from "./ui/calendar";
 import { calculateWorkingDays } from "@/utils/dateCalculations";
 import SprintDuration from "./sprint/SprintDuration";
 import { VacationDay } from "@/types/vacation";
-import { calculateTotalWorkDays, WEEKS_OF_WORK } from "@/utils/sprintCalculations";
+import { calculateTotalWorkDays, WEEKS_OF_WORK, TOTAL_WORKING_DAYS } from "@/utils/sprintCalculations";
 
 const SprintCalculator = () => {
   const [engineers, setEngineers] = useState<number>(1);
   const [vacationDays, setVacationDays] = useState<VacationDay[]>([]);
   const [selectedEngineerId, setSelectedEngineerId] = useState<number>(1);
   const [vacationHours, setVacationHours] = useState<number>(8);
-  const [sprintStartDate, setSprintStartDate] = useState<Date | undefined>(new Date());
+  const [sprintStartDate, setSprintStartDate] = useState<Date | undefined>(nextMonday(new Date()));
   const { toast } = useToast();
 
   const formatDuration = (totalDays: number) => {
@@ -125,7 +125,7 @@ const SprintCalculator = () => {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Sprint Calculator</h2>
               <p className="text-gray-600 mb-8">
-                Calculate sprint duration based on team size and vacation days
+                Calculate sprint duration based on team size and vacation days. Sprints start on Monday and end on Friday.
               </p>
             </div>
 
