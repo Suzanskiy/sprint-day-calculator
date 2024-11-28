@@ -148,8 +148,6 @@ const SprintCalculator = () => {
                 onVacationHoursChange={handleVacationHoursChange}
                 onDateSelect={handleDateSelect}
               />
-
-              <VacationList vacationDays={vacationDays} />
             </div>
 
             <div className="space-y-4 pt-4">
@@ -173,6 +171,8 @@ const SprintCalculator = () => {
                 </p>
               </div>
             </div>
+
+            <VacationList vacationDays={vacationDays} />
           </div>
         </div>
       </Card>

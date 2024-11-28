@@ -15,8 +15,8 @@ interface VacationListProps {
 const VacationList = ({ vacationDays }: VacationListProps) => {
   if (vacationDays.length === 0) {
     return (
-      <div className="text-center p-4 text-gray-500">
-        <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+      <div className="text-center p-2 text-gray-500 text-sm">
+        <Users className="w-6 h-6 mx-auto mb-1 opacity-50" />
         <p>No vacations scheduled yet</p>
       </div>
     );
@@ -25,23 +25,23 @@ const VacationList = ({ vacationDays }: VacationListProps) => {
   const sortedVacations = [...vacationDays].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return (
-    <div className="mt-6">
-      <h3 className="text-lg font-semibold mb-4">Scheduled Vacations</h3>
-      <div className="border rounded-lg overflow-hidden">
+    <div className="border-t pt-4">
+      <h3 className="text-sm font-medium text-gray-700 mb-2">Scheduled Vacations</h3>
+      <div className="border rounded-lg overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Engineer</TableHead>
-              <TableHead>Hours</TableHead>
+            <TableRow className="bg-gray-50">
+              <TableHead className="py-2">Date</TableHead>
+              <TableHead className="py-2">Engineer</TableHead>
+              <TableHead className="py-2">Hours</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedVacations.map((vacation, index) => (
-              <TableRow key={`${vacation.engineerId}-${vacation.date.getTime()}`}>
-                <TableCell>{format(vacation.date, 'PP')}</TableCell>
-                <TableCell>Engineer {vacation.engineerId}</TableCell>
-                <TableCell>{vacation.hours || 8}h</TableCell>
+            {sortedVacations.map((vacation) => (
+              <TableRow key={`${vacation.engineerId}-${vacation.date.getTime()}`} className="text-sm">
+                <TableCell className="py-1.5">{format(vacation.date, 'PP')}</TableCell>
+                <TableCell className="py-1.5">Engineer {vacation.engineerId}</TableCell>
+                <TableCell className="py-1.5">{vacation.hours || 8}h</TableCell>
               </TableRow>
             ))}
           </TableBody>
