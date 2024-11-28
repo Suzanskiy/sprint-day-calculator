@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Clock, Users } from "lucide-react";
 import { format, isWeekend } from "date-fns";
 import VacationSettings from "./vacation/VacationSettings";
+import VacationList from "./vacation/VacationList";
 
 interface VacationDay {
   date: Date;
@@ -147,6 +148,8 @@ const SprintCalculator = () => {
                 onVacationHoursChange={handleVacationHoursChange}
                 onDateSelect={handleDateSelect}
               />
+
+              <VacationList vacationDays={vacationDays} />
             </div>
 
             <div className="space-y-4 pt-4">
