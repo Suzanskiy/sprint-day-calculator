@@ -9,6 +9,8 @@ import VacationList from "./vacation/VacationList";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar as CalendarComponent } from "./ui/calendar";
+import { calculateWorkingDays } from "@/utils/dateCalculations";
+import SprintDuration from "./sprint/SprintDuration";
 
 interface VacationDay {
   date: Date;
@@ -55,16 +57,20 @@ const SprintCalculator = () => {
     }
 
     // Calculate total work days without vacation
-    const totalWorkDays = Math.ceil((TOTAL_HOURS * engineers) / WORK_HOURS_PER_DAY);
+    const totalWorkHours = TOTAL_HOURS * engineers;
+    const rawWorkDays = Math.ceil(totalWorkHours / WORK_HOURS_PER_DAY);
+    
+    // Calculate actual calendar days needed (accounting for weekends)
+    const actualWorkDays = calculateWorkingDays(new Date(), rawWorkDays);
 
-    // Subtract vacation days/hours
+    // Subtract vacation days/hours (only counting non-weekend days)
     const totalVacationDays = vacationDays.reduce((acc, vDay) => {
       if (isWeekend(vDay.date)) return acc;
       const hoursToSubtract = vDay.hours || WORK_HOURS_PER_DAY;
       return acc + (hoursToSubtract / WORK_HOURS_PER_DAY);
     }, 0);
 
-    return totalWorkDays - totalVacationDays;
+    return actualWorkDays - totalVacationDays;
   };
 
   const calculateRemainingTime = () => {
@@ -197,32 +203,14 @@ const SprintCalculator = () => {
               />
             </div>
 
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center space-x-2">
-                <Clock className="w-5 h-5 text-primary" />
-                <span className="text-sm">Working Hours: 9:00 - 17:00</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Clock className="w-5 h-5 text-primary" />
-                <span className="text-sm">Working Days: Monday - Friday</span>
-              </div>
-            </div>
-
-            <div className="pt-6 border-t">
-              <div className="text-center space-y-2">
-                <p className="text-2xl font-semibold text-primary">
-                  Total Sprint Time: {formatDuration(calculateTotalDays())}
-                </p>
-                {sprintStartDate && (
-                  <p className="text-xl font-medium text-primary">
-                    Remaining Time: {calculateRemainingTime()}
-                  </p>
-                )}
-                <p className="text-sm text-gray-500">
-                  Based on {WEEKS_OF_WORK * engineers} total weeks of work
-                </p>
-              </div>
-            </div>
+            <SprintDuration
+              formatDuration={formatDuration}
+              calculateTotalDays={calculateTotalDays}
+              calculateRemainingTime={calculateRemainingTime}
+              sprintStartDate={sprintStartDate}
+              weeksOfWork={WEEKS_OF_WORK}
+              engineers={engineers}
+            />
 
             <VacationList vacationDays={vacationDays} />
           </div>
