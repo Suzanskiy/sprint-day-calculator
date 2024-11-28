@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, Users } from "lucide-react";
-import { format, isWeekend } from "date-fns";
+import { Clock, Users, Calendar } from "lucide-react";
+import { format, isWeekend, differenceInBusinessDays, isBefore } from "date-fns";
 import VacationSettings from "./vacation/VacationSettings";
 import VacationList from "./vacation/VacationList";
+import { Button } from "./ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Calendar as CalendarComponent } from "./ui/calendar";
 
 interface VacationDay {
   date: Date;
@@ -18,6 +21,7 @@ const SprintCalculator = () => {
   const [vacationDays, setVacationDays] = useState<VacationDay[]>([]);
   const [selectedEngineerId, setSelectedEngineerId] = useState<number>(1);
   const [vacationHours, setVacationHours] = useState<number>(8);
+  const [sprintStartDate, setSprintStartDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
 
   const WORK_HOURS_PER_DAY = 8;
@@ -56,11 +60,26 @@ const SprintCalculator = () => {
     // Subtract vacation days/hours
     const totalVacationDays = vacationDays.reduce((acc, vDay) => {
       if (isWeekend(vDay.date)) return acc;
-      const hoursToSubtract = vDay.hours || WORK_HOURS_PER_DAY; // If hours not specified, subtract full day
+      const hoursToSubtract = vDay.hours || WORK_HOURS_PER_DAY;
       return acc + (hoursToSubtract / WORK_HOURS_PER_DAY);
     }, 0);
 
     return totalWorkDays - totalVacationDays;
+  };
+
+  const calculateRemainingTime = () => {
+    if (!sprintStartDate) return null;
+    
+    const today = new Date();
+    if (isBefore(today, sprintStartDate)) {
+      return "Sprint hasn't started yet";
+    }
+
+    const totalDays = calculateTotalDays();
+    const businessDaysPassed = differenceInBusinessDays(today, sprintStartDate);
+    const remainingDays = Math.max(0, totalDays - businessDaysPassed);
+
+    return formatDuration(remainingDays);
   };
 
   const handleEngineersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,6 +158,34 @@ const SprintCalculator = () => {
                 />
               </div>
 
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  <label className="text-sm font-medium">
+                    Sprint Start Date
+                  </label>
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      {sprintStartDate ? (
+                        format(sprintStartDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={sprintStartDate}
+                      onSelect={setSprintStartDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               <VacationSettings
                 engineers={engineers}
                 selectedEngineerId={selectedEngineerId}
@@ -166,6 +213,11 @@ const SprintCalculator = () => {
                 <p className="text-2xl font-semibold text-primary">
                   Total Sprint Time: {formatDuration(calculateTotalDays())}
                 </p>
+                {sprintStartDate && (
+                  <p className="text-xl font-medium text-primary">
+                    Remaining Time: {calculateRemainingTime()}
+                  </p>
+                )}
                 <p className="text-sm text-gray-500">
                   Based on {WEEKS_OF_WORK * engineers} total weeks of work
                 </p>
